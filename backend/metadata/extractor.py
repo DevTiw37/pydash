@@ -45,6 +45,77 @@ def load_callable(module_name: str, function_name: str):
 
     return function
 
+def split_signature_parameters(text: str):
+    text = text.strip()
+
+    if text.startswith("(") and text.endswith(")"):
+        text = text[1:-1]
+
+    parts = []
+    current = []
+    depth = 0
+
+    for char in text:
+        if char in "([{":
+            depth += 1
+        elif char in ")]}":
+            depth -= 1
+
+        if char == "," and depth == 0:
+            part = "".join(current).strip()
+            if part:
+                parts.append(part)
+            current = []
+        else:
+            current.append(char)
+
+    part = "".join(current).strip()
+    if part:
+        parts.append(part)
+
+    return parts
+
+
+def parse_text_signature(text: str):
+    parameters = []
+    kind = "POSITIONAL_ONLY"
+
+    for part in split_signature_parameters(text):
+        if part in {"$self", "$type"}:
+            continue
+
+        if part == "/":
+            kind = "POSITIONAL_OR_KEYWORD"
+            continue
+
+        if part == "*":
+            kind = "KEYWORD_ONLY"
+            continue
+
+        if "=" in part:
+            name, default = part.split("=", 1)
+        else:
+            name = part
+            default = None
+
+        parameters.append(
+            {
+                "name": name.strip(),
+                "default": default.strip() if default else None,
+                "kind": kind,
+            }
+        )
+
+    return parameters
+
+def get_text_signature_parameters(function):
+    text_signature = getattr(function, "__text_signature__", None)
+
+    if not text_signature:
+        return []
+
+    return parse_text_signature(text_signature)
+
 def get_signature(function):
     try:
         return inspect.signature(function)
@@ -55,34 +126,83 @@ def get_signature(function):
 def extract_parameters(function):
     signature = get_signature(function)
 
-    if signature is None:
-        return []
+    if signature is not None:
+        descriptions = extract_parameter_descriptions(function)
+        parameters = []
 
-    descriptions = extract_parameter_descriptions(function)
+        for parameter in signature.parameters.values():
+            required = parameter.default is inspect.Parameter.empty
+
+            parameter_info = {
+                "name": parameter.name,
+                "description": descriptions.get(parameter.name),
+                "type": get_type_name(parameter.annotation),
+                "default": None,
+                "default_known": False,
+                "required": required,
+                "kind": parameter.kind.name,
+            }
+
+            if parameter.default is not inspect.Parameter.empty:
+                parameter_info["default"] = parameter.default
+                parameter_info["default_known"] = True
+
+            parameters.append(parameter_info)
+
+        return parameters
+
+    text_parameters = get_text_signature_parameters(function)
 
     parameters = []
 
-    for parameter in signature.parameters.values():
-        required = parameter.default is inspect.Parameter.empty
+    for parameter in text_parameters:
+        default = parameter["default"]
+        has_default = default is not None
 
-        parameter_info = {
-            "name": parameter.name,
-            "description": descriptions.get(parameter.name),
-            "type": get_type_name(parameter.annotation),
-            "default": None,
-            "required": required,
-            "kind": parameter.kind.name,
-        }
-
-        if parameter.annotation is not inspect.Parameter.empty:
-            parameter_info["type"] = get_type_name(parameter.annotation)
-
-        if parameter.default is not inspect.Parameter.empty:
-            parameter_info["default"] = parameter.default
-
-        parameters.append(parameter_info)
+        parameters.append(
+            {
+                "name": parameter["name"],
+                "description": None,
+                "type": None,
+                "default": (
+                    None
+                    if default == "unchanged"
+                    else parse_default_value(default)
+                ),
+                "default_known": (
+                    default != "unchanged"
+                ),
+                "required": not has_default,
+                "kind": parameter["kind"],
+            }
+        )
 
     return parameters
+
+
+def parse_default_value(value: str):
+    value = value.strip()
+
+    if value == "None":
+        return None
+
+    if value == "True":
+        return True
+
+    if value == "False":
+        return False
+
+    try:
+        return int(value)
+    except ValueError:
+        pass
+
+    try:
+        return float(value)
+    except ValueError:
+        pass
+
+    return value
 
 
 def get_type_name(annotation):

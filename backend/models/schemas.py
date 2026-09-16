@@ -8,6 +8,7 @@ class ParameterMetadata(BaseModel):
     description: str | None
     type: str | None
     default: Any | None
+    default_known: bool
     required: bool
     kind: str
 
