@@ -15,10 +15,12 @@ class ParameterMetadata(BaseModel):
 
 class FunctionMetadata(BaseModel):
     name: str
+    qualified_name: str
+    callable_type: str
     docstring: str | None
     return_type: str | None
+    return_description: str | None
     parameters: list[ParameterMetadata]
-
 
 class MethodMetadata(FunctionMetadata):
     method_type: str

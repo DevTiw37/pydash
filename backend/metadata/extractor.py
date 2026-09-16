@@ -123,11 +123,14 @@ def get_signature(function):
         return None
 
 
-def extract_parameters(function):
+def extract_parameters(function, parsed_docstring=None):
     signature = get_signature(function)
 
     if signature is not None:
-        descriptions = extract_parameter_descriptions(function)
+        descriptions = extract_parameter_descriptions(
+            function,
+            parsed_docstring,
+        )
         parameters = []
 
         for parameter in signature.parameters.values():
@@ -223,13 +226,30 @@ def get_type_name(annotation):
 def get_docstring(function):
     return inspect.getdoc(function)
 
-def extract_metadata(function):
+def extract_metadata(
+    function,
+    callable_type="function",
+    qualified_name=None,
+):
+    docstring = get_docstring(function)
+    parsed_docstring = parse_docstring(function)
+
     return {
         "name": function.__name__,
-        "docstring": get_docstring(function),
+        "qualified_name": qualified_name,
+        "callable_type": callable_type,
+        "docstring": docstring,
         "return_type": get_return_type(function),
-        "parameters": extract_parameters(function),
+        "return_description": extract_return_description(
+            function,
+            parsed_docstring,
+        ),
+        "parameters": extract_parameters(
+            function,
+            parsed_docstring,
+        ),
     }
+    
     
 def parse_docstring(function):
     docstring = inspect.getdoc(function)
@@ -246,8 +266,9 @@ def parse_docstring(function):
 
     return parsed
 
-def extract_parameter_descriptions(function):
-    parsed = parse_docstring(function)
+def extract_parameter_descriptions(function, parsed=None):
+    if parsed is None:
+        parsed = parse_docstring(function)
 
     descriptions = {}
 
@@ -260,6 +281,20 @@ def extract_parameter_descriptions(function):
                 descriptions[item.name] = item.description
 
     return descriptions
+
+def extract_return_description(function, parsed=None):
+    if parsed is None:
+        parsed = parse_docstring(function)
+
+    if parsed is None:
+        return None
+
+    for section in parsed.parsed:
+        if type(section).__name__ == "DocstringSectionReturns":
+            if section.value:
+                return section.value[0].description
+
+    return None
 
 def get_return_type(function):
     signature = get_signature(function)
