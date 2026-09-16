@@ -45,9 +45,19 @@ def load_callable(module_name: str, function_name: str):
 
     return function
 
+def get_signature(function):
+    try:
+        return inspect.signature(function)
+    except (TypeError, ValueError):
+        return None
+
 
 def extract_parameters(function):
-    signature = inspect.signature(function)
+    signature = get_signature(function)
+
+    if signature is None:
+        return []
+
     descriptions = extract_parameter_descriptions(function)
 
     parameters = []
@@ -132,10 +142,12 @@ def extract_parameter_descriptions(function):
     return descriptions
 
 def get_return_type(function):
-    signature = inspect.signature(function)
+    signature = get_signature(function)
+
+    if signature is None:
+        return None
 
     if signature.return_annotation is inspect.Signature.empty:
         return None
 
     return get_type_name(signature.return_annotation)
-

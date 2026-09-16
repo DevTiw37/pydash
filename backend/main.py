@@ -1,6 +1,12 @@
 from fastapi import FastAPI, HTTPException
 
-from models.schemas import FunctionMetadata, ModuleMetadata, ClassMetadata, PackageMetadata
+from models.schemas import (
+    FunctionMetadata,
+    MethodMetadata,
+    ModuleMetadata,
+    ClassMetadata,
+    PackageMetadata,
+)
 from services.function_service import (
     get_function_metadata as fetch_function_metadata
 )
@@ -73,7 +79,7 @@ def get_class_metadata_endpoint(
     
 @app.get(
     "/method/{module}/{class_name}/{method_name}",
-    response_model=FunctionMetadata,
+    response_model=MethodMetadata,
 )
 def get_method_metadata_endpoint(
     module: str,

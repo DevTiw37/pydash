@@ -18,18 +18,26 @@ class FunctionMetadata(BaseModel):
     return_type: str | None
     parameters: list[ParameterMetadata]
 
-class ModuleMetadata(BaseModel):
-    module: str
-    callables: list[DiscoveredObject]
-    
+
+class MethodMetadata(FunctionMetadata):
+    method_type: str
+
+
 class DiscoveredObject(BaseModel):
     name: str
     kind: str
-    
+
+
+class ModuleMetadata(BaseModel):
+    module: str
+    callables: list[DiscoveredObject]
+
+
 class ClassMetadata(BaseModel):
     class_name: str
     methods: list[DiscoveredObject]
-    
+
+
 class PackageMetadata(BaseModel):
     package: str
     modules: list[DiscoveredObject]

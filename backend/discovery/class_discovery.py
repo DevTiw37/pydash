@@ -64,6 +64,36 @@ def discover_methods(class_object) -> list[DiscoveredObject]:
 
     return methods
 
+def get_method_type(class_object, method_name: str) -> str:
+    for current_class in class_object.__mro__:
+        if current_class is object:
+            continue
+
+        if method_name not in current_class.__dict__:
+            continue
+
+        attribute = current_class.__dict__[method_name]
+
+        if isinstance(attribute, classmethod):
+            return "class_method"
+
+        if isinstance(attribute, staticmethod):
+            return "static_method"
+
+        if type(attribute).__name__ == "classmethod_descriptor":
+            return "class_method"
+
+        if type(attribute).__name__ == "method_descriptor":
+            return "instance_method"
+
+        if inspect.isfunction(attribute):
+            return "instance_method"
+
+    raise AttributeError(
+        f"Method '{method_name}' not found in class "
+        f"'{class_object.__name__}'"
+    )
+
 
 
 if __name__ == "__main__":
