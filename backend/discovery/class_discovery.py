@@ -20,24 +20,50 @@ def load_method(class_object, method_name: str):
 
 def discover_methods(class_object) -> list[DiscoveredObject]:
     methods: list[DiscoveredObject] = []
+    discovered_names: set[str] = set()
 
-    for name in dir(class_object):
-        if name.startswith("_"):
+    for current_class in class_object.__mro__:
+        if current_class is object:
             continue
 
-        attribute = getattr(class_object, name)
+        for name, attribute in current_class.__dict__.items():
+            if name.startswith("_"):
+                continue
 
-        if inspect.isfunction(attribute) or inspect.isbuiltin(attribute):
+            if name in discovered_names:
+                continue
+
+            if isinstance(attribute, classmethod):
+                kind = "class_method"
+
+            elif isinstance(attribute, staticmethod):
+                kind = "static_method"
+
+            elif type(attribute).__name__ == "classmethod_descriptor":
+                kind = "class_method"
+
+            elif type(attribute).__name__ == "method_descriptor":
+                kind = "instance_method"
+
+            elif inspect.isfunction(attribute):
+                kind = "instance_method"
+
+            else:
+                continue
+
             methods.append(
                 DiscoveredObject(
                     name=name,
-                    kind="method",
+                    kind=kind,
                 )
             )
+
+            discovered_names.add(name)
 
     methods.sort(key=lambda item: item.name)
 
     return methods
+
 
 
 if __name__ == "__main__":
