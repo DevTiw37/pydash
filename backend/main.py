@@ -14,6 +14,8 @@ from services.module_service import get_module_metadata
 from services.class_service import get_class_metadata
 from services.method_service import get_method_metadata
 from services.package_service import get_package_metadata
+from models.search import SearchResponse
+from services.search_service import search
 
 app = FastAPI()
 
@@ -106,3 +108,10 @@ def get_package_metadata_endpoint(package: str):
             status_code=404,
             detail=str(error),
         )
+        
+@app.get("/search", response_model=SearchResponse)
+def search_endpoint(q: str):
+    return {
+        "query": q,
+        "results": search(q),
+    }
