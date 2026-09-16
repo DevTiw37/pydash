@@ -2,6 +2,7 @@ import importlib
 import inspect
 
 from griffe import Docstring
+from typing import get_origin
 
 def example(
     name: str,
@@ -24,6 +25,7 @@ def example(
         "age": age,
         "active": active,
     }
+    
 
 
 def load_callable(module_name: str, function_name: str):
@@ -77,10 +79,16 @@ def get_type_name(annotation):
     if annotation is inspect.Parameter.empty:
         return None
 
+    origin = get_origin(annotation)
+
+    if origin is not None:
+        return str(annotation)
+
     if hasattr(annotation, "__name__"):
         return annotation.__name__
 
     return str(annotation)
+
 
 def get_docstring(function):
     return inspect.getdoc(function)
@@ -131,8 +139,3 @@ def get_return_type(function):
 
     return get_type_name(signature.return_annotation)
 
-
-if __name__ == "__main__":
-    metadata = extract_metadata(example)
-
-    print(metadata)
