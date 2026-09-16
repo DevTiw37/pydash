@@ -94,14 +94,17 @@ def parse_text_signature(text: str):
 
         if "=" in part:
             name, default = part.split("=", 1)
+            default_known = True
         else:
             name = part
             default = None
+            default_known = False
 
         parameters.append(
             {
                 "name": name.strip(),
                 "default": default.strip() if default else None,
+                "default_known": default_known,
                 "kind": kind,
             }
         )
@@ -159,8 +162,8 @@ def extract_parameters(function, parsed_docstring=None):
     parameters = []
 
     for parameter in text_parameters:
+        default_known = parameter["default_known"]
         default = parameter["default"]
-        has_default = default is not None
 
         parameters.append(
             {
@@ -172,10 +175,8 @@ def extract_parameters(function, parsed_docstring=None):
                     if default == "unchanged"
                     else parse_default_value(default)
                 ),
-                "default_known": (
-                    default != "unchanged"
-                ),
-                "required": not has_default,
+                "default_known": default_known and default != "unchanged",
+                "required": not default_known,
                 "kind": parameter["kind"],
             }
         )
@@ -230,6 +231,7 @@ def extract_metadata(
     function,
     callable_type="function",
     qualified_name=None,
+    receiver_parameter=None,
 ):
     docstring = get_docstring(function)
     parsed_docstring = parse_docstring(function)
@@ -244,6 +246,7 @@ def extract_metadata(
             function,
             parsed_docstring,
         ),
+        "receiver_parameter": receiver_parameter,
         "parameters": extract_parameters(
             function,
             parsed_docstring,

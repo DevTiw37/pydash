@@ -12,7 +12,6 @@ class ParameterMetadata(BaseModel):
     required: bool
     kind: str
 
-
 class FunctionMetadata(BaseModel):
     name: str
     qualified_name: str
@@ -20,6 +19,7 @@ class FunctionMetadata(BaseModel):
     docstring: str | None
     return_type: str | None
     return_description: str | None
+    receiver_parameter: str | None
     parameters: list[ParameterMetadata]
 
 class MethodMetadata(FunctionMetadata):

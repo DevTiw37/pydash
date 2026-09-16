@@ -32,6 +32,18 @@ def get_method_metadata(
         class_object,
         method_name,
     )
+    
+    receiver_parameter = None
+
+    if method_type == "instance_method":
+        receiver_parameter = "self"
+        
+    metadata = extract_metadata(
+        method,
+        callable_type="method",
+        qualified_name=qualified_name,
+        receiver_parameter=receiver_parameter,
+    )
 
     return {
         **metadata,
