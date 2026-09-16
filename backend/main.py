@@ -33,14 +33,10 @@ def health():
 
 
 @app.get(
-    "/function/{package}/{module}/{name}",
+    "/function/{module}/{name}",
     response_model=FunctionMetadata,
 )
-def get_function_metadata_endpoint(
-    package: str,
-    module: str,
-    name: str,
-):
+def get_function_metadata_endpoint(module: str, name: str):
     try:
         return fetch_function_metadata(module, name)
 
