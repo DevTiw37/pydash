@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
+from contextlib import asynccontextmanager
 
 from models.schemas import (
     FunctionMetadata,
@@ -14,10 +15,19 @@ from services.module_service import get_module_metadata
 from services.class_service import get_class_metadata
 from services.method_service import get_method_metadata
 from services.package_service import get_package_metadata
-from models.search import SearchResponse
+from models.search import SearchResponse, SearchStatus
 from services.search_service import search
+from config import PACKAGES_TO_INDEX
+from search.index_manager import search_index
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    search_index.rebuild(PACKAGES_TO_INDEX)
+
+    yield
+
+app = FastAPI(lifespan=lifespan)
+
 
 
 @app.get("/")
@@ -110,8 +120,20 @@ def get_package_metadata_endpoint(package: str):
         )
         
 @app.get("/search", response_model=SearchResponse)
-def search_endpoint(q: str):
+def search_endpoint(
+    q: str = Query(min_length=1),
+    limit: int = Query(default=20, ge=1, le=100),
+):
     return {
         "query": q,
-        "results": search(q),
+        "results": search(q, limit),
+    }
+    
+@app.get("/search/status", response_model=SearchStatus)
+def search_status():
+    return {
+        "indexed_packages": search_index.packages(),
+        "total_objects": search_index.count(),
+        "ready": search_index.is_ready(),
+        "failed_packages": search_index.failed_packages(),
     }

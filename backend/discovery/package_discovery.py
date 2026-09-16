@@ -3,20 +3,22 @@ import pkgutil
 
 from models.schemas import DiscoveredObject
 
-
-def discover_modules(package_name: str):
+def discover_modules(package_name: str) -> list[DiscoveredObject]:
     package = importlib.import_module(package_name)
 
     if not hasattr(package, "__path__"):
-        raise TypeError(
-            f"'{package_name}' is not a package"
-        )
+        raise TypeError(f"'{package_name}' is not a package")
 
-    modules: list[DiscoveredObject] = []
+    results = [
+        DiscoveredObject(
+            name=package_name,
+            kind="module",
+        )
+    ]
 
     for module_info in pkgutil.walk_packages(
         package.__path__,
-        package.__name__ + ".",
+        prefix=f"{package_name}.",
     ):
         module_name = module_info.name
 
@@ -26,17 +28,16 @@ def discover_modules(package_name: str):
         ):
             continue
 
-        modules.append(
+        results.append(
             DiscoveredObject(
                 name=module_name,
                 kind="module",
             )
         )
 
-    modules.sort(key=lambda item: item.name)
+    results.sort(key=lambda item: item.name)
 
-    return modules
-
+    return results
 
 if __name__ == "__main__":
     result = discover_modules("email")
