@@ -1,8 +1,10 @@
+from search.ranker import SearchRanker
 from models.search import SearchResult
 from search.index_builder import build_index
 
 class SearchIndex:
     def __init__(self):
+        self._ranker = SearchRanker()
         self._index: list[SearchResult] = []
         self._packages: set[str] = set()
         self._failed_packages: dict[str, str] = {}
@@ -42,49 +44,6 @@ class SearchIndex:
     
     def packages(self) -> list[str]:
         return sorted(self._packages)
-    
-    def normalize_query(self, query: str) -> str:
-        query = query.strip().lower()
-        query = query.replace(" ", ".")
-
-        return query
-
-    def split_query_terms(self, query: str) -> list[str]:
-        query = query.strip().lower()
-
-        return query.replace(".", " ").split()
-
-    def get_search_score(
-        self,
-        item: SearchResult,
-        query: str,
-    ) -> int:
-        query = query.lower()
-
-        name = item.name.lower()
-        qualified_name = item.qualified_name.lower()
-        description = (item.description or "").lower()
-
-        if name == query:
-            return 100
-
-        if name.startswith(query):
-            return 80
-        
-        if qualified_name == query:
-            return 95
-
-        if qualified_name.endswith(query):
-            return 70
-
-        if query in name or query in qualified_name:
-            return 50
-
-        if query in description:
-            return 30
-
-        return 0
-
 
     def search(
         self,
@@ -92,8 +51,8 @@ class SearchIndex:
         limit: int = 20,
         kind: str | None = None,
     ) -> list[SearchResult]:
-        query = self.normalize_query(query)
-        terms = self.split_query_terms(query)
+        query = self._ranker.normalize_query(query)
+        terms = self._ranker.split_query_terms(query)
 
         if not query:
             return []
@@ -105,13 +64,13 @@ class SearchIndex:
                 continue
 
             if len(terms) == 1:
-                score = self.get_search_score(item, terms[0])
+                score = self._ranker.get_search_score(item, terms[0])
 
                 if score > 0:
                     scored_results.append((1, score, item))
 
             else:
-                matched_terms, total_score = self.get_multi_term_score(
+                matched_terms, total_score = self._ranker.get_multi_term_score(
                     item,
                     terms,
                 )
@@ -144,23 +103,6 @@ class SearchIndex:
         
     def failed_packages(self) -> dict[str, str]:
         return dict(self._failed_packages)
-
-    def get_multi_term_score(
-        self,
-        item: SearchResult,
-        terms: list[str],
-    ) -> tuple[int, int]:
-        matched_terms = 0
-        total_score = 0
-
-        for term in terms:
-            score = self.get_search_score(item, term)
-
-            if score > 0:
-                matched_terms += 1
-                total_score += score
-
-        return matched_terms, total_score
 
 
 search_index = SearchIndex()
