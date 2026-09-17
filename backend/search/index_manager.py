@@ -63,22 +63,15 @@ class SearchIndex:
             if kind is not None and item.kind != kind:
                 continue
 
-            if len(terms) == 1:
-                score = self._ranker.get_search_score(item, terms[0])
+            matched_terms, total_score = self._ranker.get_result_score(
+                item,
+                terms,
+            )
 
-                if score > 0:
-                    scored_results.append((1, score, item))
-
-            else:
-                matched_terms, total_score = self._ranker.get_multi_term_score(
-                    item,
-                    terms,
+            if matched_terms > 0:
+                scored_results.append(
+                    (matched_terms, total_score, item)
                 )
-
-                if matched_terms > 0:
-                    scored_results.append(
-                        (matched_terms, total_score, item)
-                    )
 
         scored_results = self._ranker.sort_results(scored_results)
         scored_results = self._ranker.limit_results(
