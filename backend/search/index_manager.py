@@ -76,6 +76,7 @@ class SearchIndex:
         self,
         query: str,
         limit: int = 20,
+        kind: str | None = None,
     ) -> list[SearchResult]:
         query = query.strip().lower()
 
@@ -85,6 +86,9 @@ class SearchIndex:
         scored_results = []
 
         for item in self._index:
+            if kind is not None and item.kind != kind:
+                continue
+            
             score = self.get_search_score(item, query)
 
             if score > 0:

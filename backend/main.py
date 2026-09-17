@@ -1,3 +1,4 @@
+from typing import Literal
 from fastapi import FastAPI, HTTPException, Query
 from contextlib import asynccontextmanager
 
@@ -123,10 +124,18 @@ def get_package_metadata_endpoint(package: str):
 def search_endpoint(
     q: str = Query(min_length=1),
     limit: int = Query(default=20, ge=1, le=100),
+    kind: Literal[
+        "module",
+        "function",
+        "class",
+        "instance_method",
+        "class_method",
+        "static_method",
+    ] | None = None,
 ):
     return {
         "query": q,
-        "results": search(q, limit),
+        "results": search(q, limit, kind),
     }
     
 @app.get("/search/status", response_model=SearchStatus)
