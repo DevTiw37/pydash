@@ -1,11 +1,6 @@
 from models.search import SearchResult
 from search.index_builder import build_index
 
-
-from models.search import SearchResult
-from search.index_builder import build_index
-
-
 class SearchIndex:
     def __init__(self):
         self._index: list[SearchResult] = []
@@ -57,6 +52,7 @@ class SearchIndex:
 
         name = item.name.lower()
         qualified_name = item.qualified_name.lower()
+        description = (item.description or "").lower()
 
         if name == query:
             return 100
@@ -70,7 +66,11 @@ class SearchIndex:
         if query in name or query in qualified_name:
             return 50
 
+        if query in description:
+            return 30
+
         return 0
+
 
     def search(
         self,
@@ -114,7 +114,5 @@ class SearchIndex:
     def failed_packages(self) -> dict[str, str]:
         return dict(self._failed_packages)
 
-
-search_index = SearchIndex()
 
 search_index = SearchIndex()

@@ -13,12 +13,23 @@ from search.endpoint_builder import (
 
 
 def get_description(obj) -> str | None:
-    docstring = getattr(obj, "__doc__", None)
+    from metadata.extractor import parse_docstring
 
-    if not docstring:
+    parsed = parse_docstring(obj)
+
+    if parsed is None:
         return None
 
-    return docstring.strip().split("\n")[0]
+    for section in parsed.parsed:
+        if type(section).__name__ == "DocstringSectionText":
+            description = section.value.strip()
+
+            if description:
+                summary = description.split("\n\n")[0]
+                return " ".join(summary.split())
+
+    return None
+
 
 def build_index(package_name: str) -> list[SearchResult]:
     modules = discover_modules(package_name)
