@@ -6,6 +6,7 @@ class SearchResult(BaseModel):
     kind: str
     module: str
     class_name: str | None = None
+    endpoint: str
     
 class SearchStatus(BaseModel):
     indexed_packages: list[str]

@@ -3,6 +3,12 @@ from discovery.package_discovery import discover_modules
 from discovery.module_discovery import discover_callables
 from discovery.class_discovery import discover_methods
 from discovery.object_loader import load_class
+from search.endpoint_builder import (
+    build_class_endpoint,
+    build_function_endpoint,
+    build_method_endpoint,
+    build_module_endpoint,
+)
 
 
 def build_index(package_name: str) -> list[SearchResult]:
@@ -13,11 +19,13 @@ def build_index(package_name: str) -> list[SearchResult]:
     for module in modules:
         results.append(
 
+            
             SearchResult(
                 name=module.name,
                 qualified_name=module.name,
                 kind=module.kind,
                 module=module.name,
+                endpoint=build_module_endpoint(module.name),
             )
             
         )
@@ -36,6 +44,17 @@ def build_index(package_name: str) -> list[SearchResult]:
                         callable_object.name
                         if callable_object.kind == "class"
                         else None
+                    ),
+                    endpoint=(
+                        build_class_endpoint(
+                            module.name,
+                            callable_object.name,
+                        )
+                        if callable_object.kind == "class"
+                        else build_function_endpoint(
+                            module.name,
+                            callable_object.name,
+                        )
                     ),
                 )
                 
@@ -61,6 +80,11 @@ def build_index(package_name: str) -> list[SearchResult]:
                             kind=method.kind,
                             module=module.name,
                             class_name=callable_object.name,
+                            endpoint=build_method_endpoint(
+                                module.name,
+                                callable_object.name,
+                                method.name,
+                            ),
                         )
                     )
 
