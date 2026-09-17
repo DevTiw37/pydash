@@ -2,6 +2,7 @@ import importlib
 import pkgutil
 
 from models.schemas import DiscoveredObject
+from models.search import SearchKind
 
 def discover_modules(package_name: str) -> list[DiscoveredObject]:
     package = importlib.import_module(package_name)
@@ -12,7 +13,7 @@ def discover_modules(package_name: str) -> list[DiscoveredObject]:
     results = [
         DiscoveredObject(
             name=package_name,
-            kind="module",
+            kind=SearchKind.MODULE,
         )
     ]
 
@@ -31,7 +32,7 @@ def discover_modules(package_name: str) -> list[DiscoveredObject]:
         results.append(
             DiscoveredObject(
                 name=module_name,
-                kind="module",
+                kind=SearchKind.MODULE,
             )
         )
 

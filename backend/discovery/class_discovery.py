@@ -1,6 +1,7 @@
 import inspect
 
 from models.schemas import DiscoveredObject
+from models.search import SearchKind
 
 def load_method(class_object, method_name: str):
     if not hasattr(class_object, method_name):
@@ -34,19 +35,19 @@ def discover_methods(class_object) -> list[DiscoveredObject]:
                 continue
 
             if isinstance(attribute, classmethod):
-                kind = "class_method"
+                kind = SearchKind.CLASS_METHOD
 
             elif isinstance(attribute, staticmethod):
-                kind = "static_method"
+                kind = SearchKind.STATIC_METHOD
 
             elif type(attribute).__name__ == "classmethod_descriptor":
-                kind = "class_method"
+                kind = SearchKind.CLASS_METHOD
 
             elif type(attribute).__name__ == "method_descriptor":
-                kind = "instance_method"
+                kind = SearchKind.INSTANCE_METHOD
 
             elif inspect.isfunction(attribute):
-                kind = "instance_method"
+                kind = SearchKind.INSTANCE_METHOD
 
             else:
                 continue

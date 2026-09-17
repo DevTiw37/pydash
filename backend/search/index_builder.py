@@ -1,5 +1,5 @@
 import importlib
-from models.search import SearchResult
+from models.search import SearchResult, SearchKind
 from discovery.package_discovery import discover_modules
 from discovery.module_discovery import discover_callables
 from discovery.class_discovery import discover_methods
@@ -63,7 +63,7 @@ def build_index(package_name: str) -> list[SearchResult]:
                     module=module.name,
                     class_name=(
                         callable_object.name
-                        if callable_object.kind == "class"
+                        if callable_object.kind == SearchKind.CLASS
                         else None
                     ),
                     endpoint=(
@@ -71,7 +71,7 @@ def build_index(package_name: str) -> list[SearchResult]:
                             module.name,
                             callable_object.name,
                         )
-                        if callable_object.kind == "class"
+                        if callable_object.kind == SearchKind.CLASS
                         else build_function_endpoint(
                             module.name,
                             callable_object.name,
@@ -82,7 +82,7 @@ def build_index(package_name: str) -> list[SearchResult]:
                 
             )
 
-            if callable_object.kind == "class":
+            if callable_object.kind == SearchKind.CLASS:
                 class_object = load_class(
                     module.name,
                     callable_object.name,

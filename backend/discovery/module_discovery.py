@@ -2,6 +2,7 @@ import importlib
 import inspect
 
 from models.schemas import DiscoveredObject
+from models.search import SearchKind
 
 def discover_callables(
     module_name: str,
@@ -23,7 +24,7 @@ def discover_callables(
             callables.append(
                 DiscoveredObject(
                     name=name,
-                    kind="class",
+                    kind=SearchKind.CLASS,
                 )
             )
 
@@ -34,7 +35,7 @@ def discover_callables(
             callables.append(
                 DiscoveredObject(
                     name=name,
-                    kind="function",
+                    kind=SearchKind.FUNCTION,
                 )
             )
 

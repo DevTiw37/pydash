@@ -1,4 +1,3 @@
-from typing import Literal
 from fastapi import FastAPI, HTTPException, Query
 from contextlib import asynccontextmanager
 
@@ -16,7 +15,7 @@ from services.module_service import get_module_metadata
 from services.class_service import get_class_metadata
 from services.method_service import get_method_metadata
 from services.package_service import get_package_metadata
-from models.search import SearchResponse, SearchStatus
+from models.search import SearchKind, SearchResponse, SearchStatus
 from services.search_service import search
 from config import PACKAGES_TO_INDEX
 from search.index_manager import search_index
@@ -124,14 +123,7 @@ def get_package_metadata_endpoint(package: str):
 def search_endpoint(
     q: str = Query(min_length=1),
     limit: int = Query(default=20, ge=1, le=100),
-    kind: Literal[
-        "module",
-        "function",
-        "class",
-        "instance_method",
-        "class_method",
-        "static_method",
-    ] | None = None,
+    kind: SearchKind | None = None,
 ):
     return {
         "query": q,

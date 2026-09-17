@@ -5,6 +5,7 @@ from discovery.class_discovery import (
 from discovery.object_loader import load_class
 from metadata.extractor import extract_metadata
 from discovery.object_identity import get_method_qualified_name
+from models.search import SearchKind
 
 
 def get_method_metadata(
@@ -35,7 +36,7 @@ def get_method_metadata(
     
     receiver_parameter = None
 
-    if method_type == "instance_method":
+    if method_type == SearchKind.INSTANCE_METHOD:
         receiver_parameter = "self"
         
     metadata = extract_metadata(
