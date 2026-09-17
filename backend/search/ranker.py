@@ -1,6 +1,8 @@
 from models.search import SearchResult
 
 
+RankedResult = tuple[int, int, SearchResult]
+
 class SearchRanker:
     def get_search_score(
         self,
@@ -50,6 +52,21 @@ class SearchRanker:
 
         return matched_terms, total_score
 
+    def get_result_score(
+        self,
+        item: SearchResult,
+        terms: list[str],
+    ) -> tuple[int, int]:
+        if len(terms) == 1:
+            score = self.get_search_score(item, terms[0])
+
+            if score > 0:
+                return 1, score
+
+            return 0, 0
+
+        return self.get_multi_term_score(item, terms)
+
     def normalize_query(self, query: str) -> str:
         query = query.strip().lower()
         query = query.replace(" ", ".")
@@ -62,8 +79,8 @@ class SearchRanker:
 
     def sort_results(
         self,
-        results: list[tuple[int, int, SearchResult]],
-    ) -> list[tuple[int, int, SearchResult]]:
+        results: list[RankedResult],
+    ) -> list[RankedResult]:
         return sorted(
             results,
             key=lambda result: (
@@ -75,7 +92,7 @@ class SearchRanker:
 
     def limit_results(
         self,
-        results: list[tuple[int, int, SearchResult]],
+        results: list[RankedResult],
         limit: int,
-    ) -> list[tuple[int, int, SearchResult]]:
+    ) -> list[RankedResult]:
         return results[:limit]
