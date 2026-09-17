@@ -49,6 +49,11 @@ class SearchIndex:
 
         return query
 
+    def split_query_terms(self, query: str) -> list[str]:
+        query = query.strip().lower()
+
+        return query.replace(".", " ").split()
+
     def get_search_score(
         self,
         item: SearchResult,
@@ -88,6 +93,7 @@ class SearchIndex:
         kind: str | None = None,
     ) -> list[SearchResult]:
         query = self.normalize_query(query)
+        terms = self.split_query_terms(query)
 
         if not query:
             return []
@@ -97,21 +103,33 @@ class SearchIndex:
         for item in self._index:
             if kind is not None and item.kind != kind:
                 continue
-            
-            score = self.get_search_score(item, query)
 
-            if score > 0:
-                scored_results.append((score, item))
+            if len(terms) == 1:
+                score = self.get_search_score(item, terms[0])
+
+                if score > 0:
+                    scored_results.append((1, score, item))
+
+            else:
+                matched_terms, total_score = self.get_multi_term_score(
+                    item,
+                    terms,
+                )
+
+                if matched_terms > 0:
+                    scored_results.append(
+                        (matched_terms, total_score, item)
+                    )
 
         scored_results.sort(
-            key=lambda result: result[0],
-            reverse=True,
+            key=lambda result: (
+                -result[0],
+                -result[1],
+                result[2].qualified_name,
+            ),
         )
 
-        return [
-            item
-            for score, item in scored_results
-        ][:limit]
+        return [item for _, _, item in scored_results[:limit]]
         
     def rebuild(self, package_names: list[str]):
         self.clear()
@@ -126,6 +144,23 @@ class SearchIndex:
         
     def failed_packages(self) -> dict[str, str]:
         return dict(self._failed_packages)
+
+    def get_multi_term_score(
+        self,
+        item: SearchResult,
+        terms: list[str],
+    ) -> tuple[int, int]:
+        matched_terms = 0
+        total_score = 0
+
+        for term in terms:
+            score = self.get_search_score(item, term)
+
+            if score > 0:
+                matched_terms += 1
+                total_score += score
+
+        return matched_terms, total_score
 
 
 search_index = SearchIndex()
