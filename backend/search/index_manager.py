@@ -42,6 +42,12 @@ class SearchIndex:
     
     def packages(self) -> list[str]:
         return sorted(self._packages)
+    
+    def normalize_query(self, query: str) -> str:
+        query = query.strip().lower()
+        query = query.replace(" ", ".")
+
+        return query
 
     def get_search_score(
         self,
@@ -59,6 +65,9 @@ class SearchIndex:
 
         if name.startswith(query):
             return 80
+        
+        if qualified_name == query:
+            return 95
 
         if qualified_name.endswith(query):
             return 70
@@ -78,7 +87,7 @@ class SearchIndex:
         limit: int = 20,
         kind: str | None = None,
     ) -> list[SearchResult]:
-        query = query.strip().lower()
+        query = self.normalize_query(query)
 
         if not query:
             return []
