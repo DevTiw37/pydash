@@ -1,3 +1,4 @@
+import importlib
 from models.search import SearchResult
 from discovery.package_discovery import discover_modules
 from discovery.module_discovery import discover_callables
@@ -11,21 +12,29 @@ from search.endpoint_builder import (
 )
 
 
+def get_description(obj) -> str | None:
+    docstring = getattr(obj, "__doc__", None)
+
+    if not docstring:
+        return None
+
+    return docstring.strip().split("\n")[0]
+
 def build_index(package_name: str) -> list[SearchResult]:
     modules = discover_modules(package_name)
 
     results = []
 
     for module in modules:
+        module_object = importlib.import_module(module.name)
         results.append(
-
-            
             SearchResult(
                 name=module.name,
                 qualified_name=module.name,
                 kind=module.kind,
                 module=module.name,
                 endpoint=build_module_endpoint(module.name),
+                description=get_description(module_object),
             )
             
         )
@@ -34,6 +43,7 @@ def build_index(package_name: str) -> list[SearchResult]:
 
 
         for callable_object in callables:
+            actual_object = getattr(module_object, callable_object.name)
             results.append(
                 SearchResult(
                     name=callable_object.name,
@@ -56,6 +66,7 @@ def build_index(package_name: str) -> list[SearchResult]:
                             callable_object.name,
                         )
                     ),
+                    description=get_description(actual_object),
                 )
                 
             )
@@ -69,6 +80,7 @@ def build_index(package_name: str) -> list[SearchResult]:
                 methods = discover_methods(class_object)
 
                 for method in methods:
+                    method_object = getattr(class_object, method.name)
                     results.append(
                         SearchResult(
                             name=method.name,
@@ -85,6 +97,7 @@ def build_index(package_name: str) -> list[SearchResult]:
                                 callable_object.name,
                                 method.name,
                             ),
+                            description=get_description(method_object),
                         )
                     )
 
