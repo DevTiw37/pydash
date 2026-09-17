@@ -59,3 +59,23 @@ class SearchRanker:
     def split_query_terms(self, query: str) -> list[str]:
         query = query.strip().lower()
         return query.replace(".", " ").split()
+
+    def sort_results(
+        self,
+        results: list[tuple[int, int, SearchResult]],
+    ) -> list[tuple[int, int, SearchResult]]:
+        return sorted(
+            results,
+            key=lambda result: (
+                -result[0],
+                -result[1],
+                result[2].qualified_name,
+            ),
+        )
+
+    def limit_results(
+        self,
+        results: list[tuple[int, int, SearchResult]],
+        limit: int,
+    ) -> list[tuple[int, int, SearchResult]]:
+        return results[:limit]

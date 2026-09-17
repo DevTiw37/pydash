@@ -80,15 +80,13 @@ class SearchIndex:
                         (matched_terms, total_score, item)
                     )
 
-        scored_results.sort(
-            key=lambda result: (
-                -result[0],
-                -result[1],
-                result[2].qualified_name,
-            ),
+        scored_results = self._ranker.sort_results(scored_results)
+        scored_results = self._ranker.limit_results(
+            scored_results,
+            limit,
         )
 
-        return [item for _, _, item in scored_results[:limit]]
+        return [item for _, _, item in scored_results]
         
     def rebuild(self, package_names: list[str]):
         self.clear()
