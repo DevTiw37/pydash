@@ -87,11 +87,7 @@ class SearchIndex:
                     (matched_terms, total_score, item)
                 )
 
-        scored_results = self._ranker.sort_results(scored_results)
-        scored_results = self._ranker.limit_results(
-            scored_results,
-            limit,
-        )
+        scored_results = scored_results[:limit]
 
         return [item for _, _, item in scored_results]
         

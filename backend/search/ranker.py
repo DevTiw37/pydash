@@ -79,10 +79,3 @@ class SearchRanker:
                 result[2].qualified_name,
             ),
         )
-
-    def limit_results(
-        self,
-        results: list[RankedResult],
-        limit: int,
-    ) -> list[RankedResult]:
-        return results[:limit]
