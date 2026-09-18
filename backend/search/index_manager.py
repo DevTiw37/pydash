@@ -1,11 +1,14 @@
-from search.ranker import SearchRanker
+from search.ranker import Ranker, SearchRanker
 from models.search import SearchResult
 from search.index_builder import build_index
 from search.query import SearchQuery
 
 class SearchIndex:
-    def __init__(self):
-        self._ranker = SearchRanker()
+    def __init__(
+        self,
+        ranker: Ranker | None = None,
+    ):
+        self._ranker = ranker or SearchRanker()
         self._index: list[SearchResult] = []
         self._packages: set[str] = set()
         self._failed_packages: dict[str, str] = {}

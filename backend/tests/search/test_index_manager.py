@@ -1,7 +1,6 @@
 from models.search import SearchKind
 from search.index_manager import SearchIndex
 
-
 def test_new_index_is_empty():
     index = SearchIndex()
 
@@ -148,3 +147,29 @@ def test_search_ignores_punctuation_only_query():
 
     assert index.search(".") == []
     assert index.search("...") == []
+
+class SpyRanker:
+    def __init__(self):
+        self.called = False
+        self.received_items: list = []
+        self.received_terms: list[str] = []
+
+    def rank(self, items, terms):
+        self.called = True
+        self.received_items = items
+        self.received_terms = terms
+        return list(items)
+
+
+def test_search_index_uses_injected_ranker():
+    ranker = SpyRanker()
+    index = SearchIndex(ranker=ranker)
+
+    index.add_package("json")
+
+    results = index.search("dump")
+
+    assert ranker.called is True
+    assert ranker.received_terms == ["dump"]
+    assert len(ranker.received_items) == 27
+    assert results == ranker.received_items[:20]

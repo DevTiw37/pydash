@@ -1,6 +1,16 @@
 from dataclasses import dataclass
+from typing import Protocol
 
 from models.search import SearchResult
+
+
+class Ranker(Protocol):
+    def rank(
+        self,
+        items: list[SearchResult],
+        terms: list[str],
+    ) -> list[SearchResult]:
+        ...
 
 
 @dataclass(frozen=True)
