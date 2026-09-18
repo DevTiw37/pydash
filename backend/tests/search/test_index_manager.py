@@ -119,3 +119,32 @@ def test_rebuild_records_failed_package_and_continues():
     assert "package_that_does_not_exist" in failures
     assert "No module named" in failures["package_that_does_not_exist"]
 
+def test_search_normalizes_multiple_spaces():
+    index = SearchIndex()
+
+    index.add_package("json")
+
+    results = index.search("json   dump")
+
+    assert len(results) > 0
+    assert results[0].qualified_name == "json.dump"
+
+
+def test_search_normalizes_dot_separated_query():
+    index = SearchIndex()
+
+    index.add_package("json")
+
+    results = index.search("JSON.DUMP")
+
+    assert len(results) > 0
+    assert results[0].qualified_name == "json.dump"
+
+
+def test_search_ignores_punctuation_only_query():
+    index = SearchIndex()
+
+    index.add_package("json")
+
+    assert index.search(".") == []
+    assert index.search("...") == []
