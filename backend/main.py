@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException
 from contextlib import asynccontextmanager
 
 from models.schemas import (
@@ -15,10 +15,10 @@ from services.module_service import get_module_metadata
 from services.class_service import get_class_metadata
 from services.method_service import get_method_metadata
 from services.package_service import get_package_metadata
-from models.search import SearchKind, SearchResponse, SearchStatus
-from services.search_service import search
+from models.search import SearchStatus
 from config import PACKAGES_TO_INDEX
 from search.index_manager import search_index
+from routers.search import router as search_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,7 +28,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
-
+app.include_router(search_router)
 
 @app.get("/")
 def home():
@@ -118,17 +118,7 @@ def get_package_metadata_endpoint(package: str):
             status_code=404,
             detail=str(error),
         )
-        
-@app.get("/search", response_model=SearchResponse)
-def search_endpoint(
-    q: str = Query(min_length=1),
-    limit: int = Query(default=20, ge=1, le=100),
-    kind: SearchKind | None = None,
-):
-    return {
-        "query": q,
-        "results": search(q, limit, kind),
-    }
+
     
 @app.get("/search/status", response_model=SearchStatus)
 def search_status():
