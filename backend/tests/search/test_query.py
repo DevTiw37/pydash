@@ -45,3 +45,19 @@ def test_split_mixed_case_query():
     parser = SearchQuery()
 
     assert parser.split_terms("JSON.Encoder") == ["json", "encoder"]
+def test_normalize_dot_only_query():
+    parser = SearchQuery()
+
+    assert parser.normalize(".") == ""
+
+
+def test_normalize_multiple_dots():
+    parser = SearchQuery()
+
+    assert parser.normalize("...") == ""
+
+
+def test_normalize_trailing_dot():
+    parser = SearchQuery()
+
+    assert parser.normalize("json.") == "json"

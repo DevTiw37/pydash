@@ -2,7 +2,7 @@ class SearchQuery:
     def normalize(self, query: str) -> str:
         query = query.strip().lower()
 
-        terms = query.split()
+        terms = query.replace(".", " ").split()
 
         return ".".join(terms)
 
