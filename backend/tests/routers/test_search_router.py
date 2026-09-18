@@ -73,3 +73,53 @@ def test_search_status_router_returns_status(monkeypatch):
 
     assert response.status_code == 200
     assert response.json() == expected_status.model_dump()
+
+def test_search_router_rejects_missing_query():
+    app = create_test_app()
+
+    with TestClient(app) as client:
+        response = client.get("/search")
+
+    assert response.status_code == 422
+
+
+def test_search_router_rejects_empty_query():
+    app = create_test_app()
+
+    with TestClient(app) as client:
+        response = client.get(
+            "/search",
+            params={"q": ""},
+        )
+
+    assert response.status_code == 422
+
+
+def test_search_router_rejects_invalid_kind():
+    app = create_test_app()
+
+    with TestClient(app) as client:
+        response = client.get(
+            "/search",
+            params={
+                "q": "dump",
+                "kind": "invalid",
+            },
+        )
+
+    assert response.status_code == 422
+
+
+def test_search_router_rejects_invalid_limit():
+    app = create_test_app()
+
+    with TestClient(app) as client:
+        response = client.get(
+            "/search",
+            params={
+                "q": "dump",
+                "limit": 0,
+            },
+        )
+
+    assert response.status_code == 422
