@@ -144,3 +144,34 @@ def test_sort_results_uses_qualified_name_as_tie_breaker():
 
     assert sorted_results[0][2] == result_two
 
+def test_rank_returns_only_matching_results_in_rank_order():
+    ranker = SearchRanker()
+
+    matching_result = make_result(
+        name="dump",
+        qualified_name="json.dump",
+    )
+
+    partial_result = make_result(
+        name="dumps",
+        qualified_name="json.dumps",
+    )
+
+    unrelated_result = make_result(
+        name="load",
+        qualified_name="json.load",
+    )
+
+    results = ranker.rank(
+        [
+            unrelated_result,
+            partial_result,
+            matching_result,
+        ],
+        ["dump"],
+    )
+
+    assert results == [
+        matching_result,
+        partial_result,
+    ]

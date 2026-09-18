@@ -72,25 +72,14 @@ class SearchIndex:
         if not query:
             return []
 
-        scored_results = []
-
         candidates = self.filter_results(kind)
 
-        for item in candidates:
-            matched_terms, total_score = self._ranker.get_result_score(
-                item,
-                terms,
-            )
+        ranked_results = self._ranker.rank(
+            candidates,
+            terms,
+        )
 
-            if matched_terms > 0:
-                scored_results.append(
-                    (matched_terms, total_score, item)
-                )
-
-        scored_results = self._ranker.sort_results(scored_results)
-        scored_results = scored_results[:limit]
-
-        return [item for _, _, item in scored_results]
+        return ranked_results[:limit]
         
     def rebuild(self, package_names: list[str]):
         self.clear()

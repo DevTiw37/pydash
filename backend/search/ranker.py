@@ -79,3 +79,28 @@ class SearchRanker:
                 result[2].qualified_name,
             ),
         )
+
+    def rank(
+        self,
+        items: list[SearchResult],
+        terms: list[str],
+    ) -> list[SearchResult]:
+        scored_results = []
+
+        for item in items:
+            matched_terms, total_score = self.get_result_score(
+                item,
+                terms,
+            )
+
+            if matched_terms > 0:
+                scored_results.append(
+                    (matched_terms, total_score, item)
+                )
+
+        scored_results = self.sort_results(scored_results)
+
+        return [
+            item
+            for _, _, item in scored_results
+        ]
