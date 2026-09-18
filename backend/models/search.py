@@ -11,7 +11,7 @@ class SearchKind(StrEnum):
 class SearchResult(BaseModel):
     name: str
     qualified_name: str
-    kind: str
+    kind: SearchKind
     module: str
     class_name: str | None = None
     endpoint: str
