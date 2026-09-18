@@ -45,6 +45,19 @@ class SearchIndex:
     def packages(self) -> list[str]:
         return sorted(self._packages)
 
+    def filter_results(
+        self,
+        kind: str | None = None,
+    ) -> list[SearchResult]:
+        if kind is None:
+            return self._index
+
+        return [
+            item
+            for item in self._index
+            if item.kind == kind
+        ]
+
     def search(
         self,
         query: str,
@@ -59,10 +72,9 @@ class SearchIndex:
 
         scored_results = []
 
-        for item in self._index:
-            if kind is not None and item.kind != kind:
-                continue
+        candidates = self.filter_results(kind)
 
+        for item in candidates:
             matched_terms, total_score = self._ranker.get_result_score(
                 item,
                 terms,
