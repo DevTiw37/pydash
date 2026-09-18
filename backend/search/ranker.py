@@ -10,7 +10,23 @@ class RankedResult:
     result: SearchResult
 
 
+@dataclass(frozen=True)
+class RankingPolicy:
+    exact_name: int = 100
+    exact_qualified_name: int = 95
+    name_prefix: int = 80
+    qualified_name_suffix: int = 70
+    name_contains: int = 50
+    description_contains: int = 30
+
+
 class SearchRanker:
+    def __init__(
+        self,
+        policy: RankingPolicy | None = None,
+    ):
+        self.policy = policy or RankingPolicy()
+
     def get_search_score(
         self,
         item: SearchResult,
@@ -23,22 +39,22 @@ class SearchRanker:
         description = (item.description or "").lower()
 
         if name == query:
-            return 100
+            return self.policy.exact_name
 
         if qualified_name == query:
-            return 95
+            return self.policy.exact_qualified_name
 
         if name.startswith(query):
-            return 80
+            return self.policy.name_prefix
 
         if qualified_name.endswith(query):
-            return 70
+            return self.policy.qualified_name_suffix
 
         if query in name or query in qualified_name:
-            return 50
+            return self.policy.name_contains
 
         if query in description:
-            return 30
+            return self.policy.description_contains
 
         return 0
 

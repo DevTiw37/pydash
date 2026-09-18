@@ -1,6 +1,5 @@
 from models.search import SearchKind, SearchResult
-from search.ranker import RankedResult, SearchRanker
-
+from search.ranker import RankedResult, RankingPolicy, SearchRanker
 
 def make_result(
     name: str = "dump",
@@ -200,3 +199,13 @@ def test_rank_returns_only_matching_results_in_rank_order():
         matching_result,
         partial_result,
     ]
+
+def test_custom_ranking_policy_changes_score():
+    policy = RankingPolicy(
+        exact_name=200,
+    )
+
+    ranker = SearchRanker(policy)
+    result = make_result()
+
+    assert ranker.get_search_score(result, "dump") == 200
