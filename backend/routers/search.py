@@ -1,8 +1,7 @@
 from fastapi import APIRouter, Query
 
 from models.search import SearchKind, SearchResponse, SearchStatus
-from search.index_manager import search_index
-from services.search_service import search
+from services.search_service import search, search_status
 
 
 router = APIRouter(
@@ -11,13 +10,8 @@ router = APIRouter(
 )
 
 @router.get("/status", response_model=SearchStatus)
-def search_status():
-    return SearchStatus(
-        indexed_packages=search_index.packages(),
-        failed_packages=search_index.failed_packages(),
-        total_objects=search_index.count(),
-        ready=search_index.is_ready(),
-    )
+def search_status_endpoint():
+    return search_status()
 
 @router.get("", response_model=SearchResponse)
 def search_endpoint(
