@@ -25,3 +25,13 @@ def test_split_empty_query():
     parser = SearchQuery()
 
     assert parser.split_terms("") == []
+
+def test_normalize_multiple_spaces():
+    parser = SearchQuery()
+
+    assert parser.normalize("json   dump") == "json.dump"
+
+def test_normalize_tabs():
+    parser = SearchQuery()
+
+    assert parser.normalize("json\tdump") == "json.dump"

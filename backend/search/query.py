@@ -1,9 +1,10 @@
 class SearchQuery:
     def normalize(self, query: str) -> str:
         query = query.strip().lower()
-        query = query.replace(" ", ".")
 
-        return query
+        terms = query.split()
+
+        return ".".join(terms)
 
     def split_terms(self, query: str) -> list[str]:
         query = query.strip().lower()
