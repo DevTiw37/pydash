@@ -2,3 +2,6 @@ PACKAGES_TO_INDEX = [
     "email",
     "json",
 ]
+
+SEARCH_DEFAULT_LIMIT = 20
+SEARCH_MAX_LIMIT = 100
