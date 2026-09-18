@@ -35,3 +35,13 @@ def test_normalize_tabs():
     parser = SearchQuery()
 
     assert parser.normalize("json\tdump") == "json.dump"
+
+def test_normalize_dot_separated_query():
+    parser = SearchQuery()
+
+    assert parser.normalize("JSON.Encoder") == "json.encoder"
+
+def test_split_mixed_case_query():
+    parser = SearchQuery()
+
+    assert parser.split_terms("JSON.Encoder") == ["json", "encoder"]
