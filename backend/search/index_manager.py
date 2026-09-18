@@ -1,6 +1,7 @@
 from search.ranker import SearchRanker
 from models.search import SearchResult
 from search.index_builder import build_index
+from search.query import SearchQuery
 
 class SearchIndex:
     def __init__(self):
@@ -10,6 +11,7 @@ class SearchIndex:
         self._failed_packages: dict[str, str] = {}
         self._qualified_names: set[str] = set()
         self._ready = False
+        self._query_parser = SearchQuery()
         
     def clear(self):
         self._index.clear()
@@ -64,8 +66,8 @@ class SearchIndex:
         limit: int = 20,
         kind: str | None = None,
     ) -> list[SearchResult]:
-        query = self._ranker.normalize_query(query)
-        terms = self._ranker.split_query_terms(query)
+        query = self._query_parser.normalize(query)
+        terms = self._query_parser.split_terms(query)
 
         if not query:
             return []

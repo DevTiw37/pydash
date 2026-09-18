@@ -67,16 +67,6 @@ class SearchRanker:
 
         return self.get_multi_term_score(item, terms)
 
-    def normalize_query(self, query: str) -> str:
-        query = query.strip().lower()
-        query = query.replace(" ", ".")
-
-        return query
-
-    def split_query_terms(self, query: str) -> list[str]:
-        query = query.strip().lower()
-        return query.replace(".", " ").split()
-
     def sort_results(
         self,
         results: list[RankedResult],
