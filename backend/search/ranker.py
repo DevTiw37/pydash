@@ -1,7 +1,14 @@
+from dataclasses import dataclass
+
 from models.search import SearchResult
 
 
-RankedResult = tuple[int, int, SearchResult]
+@dataclass(frozen=True)
+class RankedResult:
+    matched_terms: int
+    total_score: int
+    result: SearchResult
+
 
 class SearchRanker:
     def get_search_score(
@@ -74,9 +81,9 @@ class SearchRanker:
         return sorted(
             results,
             key=lambda result: (
-                -result[0],
-                -result[1],
-                result[2].qualified_name,
+                -result.matched_terms,
+                -result.total_score,
+                result.result.qualified_name,
             ),
         )
 
@@ -85,7 +92,7 @@ class SearchRanker:
         items: list[SearchResult],
         terms: list[str],
     ) -> list[SearchResult]:
-        scored_results = []
+        scored_results: list[RankedResult] = []
 
         for item in items:
             matched_terms, total_score = self.get_result_score(
@@ -95,12 +102,16 @@ class SearchRanker:
 
             if matched_terms > 0:
                 scored_results.append(
-                    (matched_terms, total_score, item)
+                    RankedResult(
+                        matched_terms=matched_terms,
+                        total_score=total_score,
+                        result=item,
+                    )
                 )
 
         scored_results = self.sort_results(scored_results)
 
         return [
-            item
-            for _, _, item in scored_results
+            ranked_result.result
+            for ranked_result in scored_results
         ]

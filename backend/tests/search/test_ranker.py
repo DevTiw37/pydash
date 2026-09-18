@@ -1,5 +1,5 @@
 from models.search import SearchKind, SearchResult
-from search.ranker import SearchRanker
+from search.ranker import RankedResult, SearchRanker
 
 
 def make_result(
@@ -92,13 +92,21 @@ def test_sort_results_prioritizes_matched_terms():
     )
 
     results = [
-        (1, 100, result_one),
-        (2, 60, result_two),
+        RankedResult(
+            matched_terms=1,
+            total_score=100,
+            result=result_one,
+        ),
+        RankedResult(
+            matched_terms=2,
+            total_score=60,
+            result=result_two,
+        ),
     ]
 
     sorted_results = ranker.sort_results(results)
 
-    assert sorted_results[0][2] == result_two
+    assert sorted_results[0].result == result_two
 
 def test_sort_results_uses_total_score_after_coverage():
     ranker = SearchRanker()
@@ -114,13 +122,21 @@ def test_sort_results_uses_total_score_after_coverage():
     )
 
     results = [
-        (2, 60, result_one),
-        (2, 100, result_two),
+        RankedResult(
+            matched_terms=2,
+            total_score=60,
+            result=result_one,
+        ),
+        RankedResult(
+            matched_terms=2,
+            total_score=100,
+            result=result_two,
+        ),
     ]
 
     sorted_results = ranker.sort_results(results)
 
-    assert sorted_results[0][2] == result_two
+    assert sorted_results[0].result == result_two
 
 def test_sort_results_uses_qualified_name_as_tie_breaker():
     ranker = SearchRanker()
@@ -136,13 +152,22 @@ def test_sort_results_uses_qualified_name_as_tie_breaker():
     )
 
     results = [
-        (1, 50, result_one),
-        (1, 50, result_two),
+        RankedResult(
+            matched_terms=1,
+            total_score=50,
+            result=result_one,
+        ),
+        RankedResult(
+            matched_terms=1,
+            total_score=50,
+            result=result_two,
+        ),
     ]
+
 
     sorted_results = ranker.sort_results(results)
 
-    assert sorted_results[0][2] == result_two
+    assert sorted_results[0].result == result_two
 
 def test_rank_returns_only_matching_results_in_rank_order():
     ranker = SearchRanker()
