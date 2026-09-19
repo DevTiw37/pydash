@@ -18,6 +18,7 @@ from services.package_service import get_package_metadata
 from config import PACKAGES_TO_INDEX
 from search.index_manager import search_index
 from routers.search import router as search_router
+from routers.function import router as function_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -28,6 +29,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(search_router)
+app.include_router(function_router)
 
 @app.get("/")
 def home():
@@ -44,20 +46,6 @@ def health():
 
 
 @app.get(
-    "/function/{module}/{name}",
-    response_model=FunctionMetadata,
-)
-def get_function_metadata_endpoint(module: str, name: str):
-    try:
-        return fetch_function_metadata(module, name)
-
-    except (ModuleNotFoundError, AttributeError, TypeError) as error:
-        raise HTTPException(
-            status_code=404,
-            detail=str(error),
-        )
-        
-@app.get(
     "/module/{module}",
     response_model=ModuleMetadata,
 )
@@ -70,7 +58,7 @@ def get_module_metadata_endpoint(module: str):
             status_code=404,
             detail=str(error),
         )
-        
+
 @app.get(
     "/class/{module}/{class_name}",
     response_model=ClassMetadata,
