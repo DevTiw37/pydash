@@ -23,22 +23,16 @@ def get_method_metadata(
         method_name,
     )
 
-    metadata = extract_metadata(
-        method,
-        callable_type="method",
-        qualified_name=qualified_name,
-    )
-
     method_type = get_method_type(
         class_object,
         method_name,
     )
-    
+
     receiver_parameter = None
 
     if method_type == SearchKind.INSTANCE_METHOD:
         receiver_parameter = "self"
-        
+
     metadata = extract_metadata(
         method,
         callable_type="method",
