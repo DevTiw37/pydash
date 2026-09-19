@@ -1,10 +1,11 @@
+from config import SEARCH_DEFAULT_LIMIT
 from search.index_manager import search_index
 from models.search import SearchStatus
 
 
 def search(
     query: str,
-    limit: int = 20,
+    limit: int = SEARCH_DEFAULT_LIMIT,
     kind: str | None = None,
 ):
     return search_index.search(query, limit, kind)

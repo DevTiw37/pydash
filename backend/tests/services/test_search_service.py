@@ -26,3 +26,9 @@ def test_search_service_returns_status():
     assert status.ready is True
     assert "json" in status.indexed_packages
     assert status.total_objects > 0
+
+
+def test_search_service_uses_configured_default_limit():
+    results = search("json")
+
+    assert len(results) == 20

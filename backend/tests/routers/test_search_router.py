@@ -123,3 +123,17 @@ def test_search_router_rejects_invalid_limit():
         )
 
     assert response.status_code == 422
+
+def test_search_router_rejects_limit_above_maximum():
+    app = create_test_app()
+
+    with TestClient(app) as client:
+        response = client.get(
+            "/search",
+            params={
+                "q": "dump",
+                "limit": 101,
+            },
+        )
+
+    assert response.status_code == 422
