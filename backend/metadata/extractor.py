@@ -2,30 +2,7 @@ import importlib
 import inspect
 
 from griffe import Docstring
-from typing import get_origin
-
-def example(
-    name: str,
-    age: int = 20,
-    active: bool = True
-) -> dict:
-    """
-    Create an example user.
-
-    Args:
-        name: Name of the user.
-        age: Age of the user.
-        active: Whether the user is active.
-
-    Returns:
-        A dictionary containing the user information.
-    """
-    return {
-        "name": name,
-        "age": age,
-        "active": active,
-    }
-    
+from typing import get_origin    
 
 
 def load_callable(module_name: str, function_name: str):
