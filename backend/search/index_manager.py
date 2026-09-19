@@ -1,3 +1,4 @@
+from config import SEARCH_DEFAULT_LIMIT
 from search.ranker import Ranker, SearchRanker
 from models.search import SearchResult
 from search.index_builder import build_index
@@ -66,7 +67,7 @@ class SearchIndex:
     def search(
         self,
         query: str,
-        limit: int = 20,
+        limit: int = SEARCH_DEFAULT_LIMIT,
         kind: str | None = None,
     ) -> list[SearchResult]:
         query = self._query_parser.normalize(query)

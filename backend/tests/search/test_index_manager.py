@@ -1,6 +1,7 @@
 from models.search import SearchKind
 from search.index_manager import SearchIndex
 
+
 def test_new_index_is_empty():
     index = SearchIndex()
 
@@ -87,6 +88,16 @@ def test_search_applies_limit():
     )
 
     assert len(results) == 5
+
+
+def test_search_uses_configured_default_limit():
+    index = SearchIndex()
+
+    index.add_package("json")
+
+    results = index.search("json")
+
+    assert len(results) == 20
 
 def test_rebuild_replaces_existing_index():
     index = SearchIndex()
